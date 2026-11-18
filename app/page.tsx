@@ -1,35 +1,14 @@
-import { and, desc, eq, sql } from 'drizzle-orm';
-import { db } from '@/db';
-import { modelRuns, segments, customerMetrics } from '@/db/schema';
 import SegmentChart from '@/components/segment-chart';
-
-export const revalidate = 3600; // el dashboard solo lee; se refresca cada hora
+import { getRfmDashboard } from '@/lib/dashboard';
 
 export default async function Page() {
-  const run = await db.query.modelRuns.findFirst({
-    where: and(eq(modelRuns.type, 'rfm'), eq(modelRuns.isActive, true)),
-  });
+  const data = await getRfmDashboard();
 
-  if (!run) {
+  if (!data) {
     return <main className="p-6">Aún no hay un modelo entrenado.</main>;
   }
 
-  const revenueExpr = sql<number>`coalesce(sum(${customerMetrics.monetary}), 0)::float`;
-  const ordersExpr = sql<number>`coalesce(sum(${customerMetrics.frequency}), 0)::int`;
-
-  const segs = await db
-    .select({
-      name: segments.name,
-      size: segments.size,
-      revenue: revenueExpr,
-      orders: ordersExpr,
-    })
-    .from(segments)
-    .leftJoin(customerMetrics, eq(customerMetrics.segmentId, segments.id))
-    .where(eq(segments.modelRunId, run.id))
-    .groupBy(segments.id, segments.name, segments.size)
-    .orderBy(desc(revenueExpr));
-
+  const { segs, cutoff } = data;
   const customers = segs.reduce((s, x) => s + x.size, 0);
   const revenue = segs.reduce((s, x) => s + x.revenue, 0);
   const orders = segs.reduce((s, x) => s + x.orders, 0);
@@ -46,7 +25,7 @@ export default async function Page() {
     <main className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
       <header>
         <h1 className="text-xl font-semibold sm:text-2xl">Customer Intelligence</h1>
-        <p className="text-sm text-gray-500">Segmentación RFM · corte al {run.cutoffDate?.toISOString().slice(0, 10)}</p>
+        <p className="text-sm text-gray-500">Segmentación RFM · corte al {cutoff}</p>
       </header>
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
