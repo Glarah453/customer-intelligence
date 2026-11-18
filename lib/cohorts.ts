@@ -35,7 +35,11 @@ export async function getCohorts(): Promise<CohortRow[]> {
     const [y, mo] = ym.split('-').map(Number);
     return y * 12 + mo;
   };
-  const lastMonth = Math.max(...rows.map((r) => idx(r.cohort) + r.m));
+
+  // const lastMonth = Math.max(...rows.map((r) => idx(r.cohort) + r.m));
+  
+  // el último mes del dataset (dic 2011) está incompleto: lo excluimos
+  const lastMonth = Math.max(...rows.map((r) => idx(r.cohort) + r.m)) - 1;
 
   const byCohort = new Map<string, Map<number, number>>();
   for (const r of rows) {
