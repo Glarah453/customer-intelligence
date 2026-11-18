@@ -1,69 +1,88 @@
-import Image from "next/image";
+import { and, desc, eq, sql } from 'drizzle-orm';
+import { db } from '@/db';
+import { modelRuns, segments, customerMetrics } from '@/db/schema';
+import SegmentChart from '@/components/segment-chart';
 
-export default function Home() {
+export const revalidate = 3600; // el dashboard solo lee; se refresca cada hora
+
+export default async function Page() {
+  const run = await db.query.modelRuns.findFirst({
+    where: and(eq(modelRuns.type, 'rfm'), eq(modelRuns.isActive, true)),
+  });
+
+  if (!run) {
+    return <main className="p-6">Aún no hay un modelo entrenado.</main>;
+  }
+
+  const revenueExpr = sql<number>`coalesce(sum(${customerMetrics.monetary}), 0)::float`;
+  const ordersExpr = sql<number>`coalesce(sum(${customerMetrics.frequency}), 0)::int`;
+
+  const segs = await db
+    .select({
+      name: segments.name,
+      size: segments.size,
+      revenue: revenueExpr,
+      orders: ordersExpr,
+    })
+    .from(segments)
+    .leftJoin(customerMetrics, eq(customerMetrics.segmentId, segments.id))
+    .where(eq(segments.modelRunId, run.id))
+    .groupBy(segments.id, segments.name, segments.size)
+    .orderBy(desc(revenueExpr));
+
+  const customers = segs.reduce((s, x) => s + x.size, 0);
+  const revenue = segs.reduce((s, x) => s + x.revenue, 0);
+  const orders = segs.reduce((s, x) => s + x.orders, 0);
+  const gbp = (n: number) => `£${n.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
+
+  const kpis = [
+    { label: 'Clientes', value: customers.toLocaleString('en-GB') },
+    { label: 'Ingresos', value: gbp(revenue) },
+    { label: 'Órdenes', value: orders.toLocaleString('en-GB') },
+    { label: 'Ticket promedio', value: gbp(revenue / orders) },
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
+      <header>
+        <h1 className="text-xl font-semibold sm:text-2xl">Customer Intelligence</h1>
+        <p className="text-sm text-gray-500">Segmentación RFM · corte al {run.cutoffDate?.toISOString().slice(0, 10)}</p>
+      </header>
+
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {kpis.map((k) => (
+          <div key={k.label} className="rounded-xl border bg-white p-4 shadow-sm">
+            <p className="text-xs text-gray-500">{k.label}</p>
+            <p className="mt-1 text-lg font-semibold sm:text-2xl">{k.value}</p>
+          </div>
+        ))}
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-xl border bg-white p-4 shadow-sm">
+          <h2 className="mb-2 font-medium">Ingresos por segmento</h2>
+          <SegmentChart data={segs.map((s) => ({ name: s.name, revenue: s.revenue }))} />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="overflow-x-auto rounded-xl border bg-white p-4 shadow-sm">
+          <h2 className="mb-2 font-medium">Detalle</h2>
+          <table className="w-full min-w-[320px] text-sm">
+            <thead className="text-left text-gray-500">
+              <tr><th className="py-1">Segmento</th><th>Clientes</th><th>% base</th><th className="text-right">Ingresos</th></tr>
+            </thead>
+            <tbody>
+              {segs.map((s) => (
+                <tr key={s.name} className="border-t">
+                  <td className="py-2">{s.name}</td>
+                  <td>{s.size.toLocaleString('en-GB')}</td>
+                  <td>{((s.size / customers) * 100).toFixed(1)}%</td>
+                  <td className="text-right">{gbp(s.revenue)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }
