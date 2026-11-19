@@ -34,16 +34,31 @@ export default function TrainForm({ enabled }: { enabled: boolean }) {
           {pending ? 'Entrenando…' : 'Entrenar K-Means'}
         </button>
       </div>
-
       {state && (
-        <pre
-          className={`max-h-64 overflow-auto rounded-lg p-3 text-xs ${
-            state.ok ? 'bg-gray-900 text-gray-100' : 'bg-red-950 text-red-100'
-          }`}
-        >
-          {state.log}
-        </pre>
+        <div className="space-y-2">
+          <p className={`text-sm font-medium ${state.ok ? 'text-green-700' : 'text-red-700'}`}>
+            {state.ok
+              ? '✓ Entrenamiento completado. Los resultados de abajo ya están actualizados.'
+              : '✗ El entrenamiento falló. Revisa el log.'}
+          </p>
+          <details open={!state.ok}>
+            <summary className="cursor-pointer text-xs text-gray-500">Ver log</summary>
+            <pre className="mt-2 max-h-64 overflow-auto whitespace-pre rounded-lg bg-gray-900 p-3 font-mono text-xs leading-relaxed text-gray-100">
+              {state.log}
+            </pre>
+          </details>
+        </div>
       )}
+
+      {/* {state && ( */}
+      {/*   <pre */}
+      {/*     className={`max-h-64 overflow-auto rounded-lg p-3 text-xs ${ */}
+      {/*       state.ok ? 'bg-gray-900 text-gray-100' : 'bg-red-950 text-red-100' */}
+      {/*     }`} */}
+      {/*   > */}
+      {/*     {state.log} */}
+      {/*   </pre> */}
+      {/* )} */}
     </form>
   );
 }
