@@ -58,15 +58,30 @@ function bestOfSeeds(X: number[][], k: number) {
 
 // ---------- nombres de segmento a partir del centroide estandarizado ----------
 // z = [recencia, frecuencia, monto]; recencia alta = hace mucho que no compra
-function nameCluster([r, f, m]: number[]): string {
-  const rHigh = r > 0.4, rLow = r < -0.4;
-  const fHigh = f > 0.4 || m > 0.6;
-  if (rLow && fHigh) return 'Campeones';
-  if (rLow) return 'Recientes';
-  if (rHigh && fHigh) return 'En riesgo';
-  if (rHigh) return 'Hibernando';
-  return fHigh ? 'Leales' : 'Regulares';
+// function nameCluster([r, f, m]: number[]): string {
+//   const rHigh = r > 0.4, rLow = r < -0.4;
+//   const fHigh = f > 0.4 || m > 0.6;
+//   if (rLow && fHigh) return 'Campeones';
+//   if (rLow) return 'Recientes';
+//   if (rHigh && fHigh) return 'En riesgo';
+//   if (rHigh) return 'Hibernando';
+//   return fHigh ? 'Leales' : 'Regulares';
+// }
+
+const RECENT_DAYS = 90;
+
+type Raw = { recency: number; frequency: number; monetary: number };
+
+function nameClusters(raw: Raw[]): string[] {
+  const vip = raw.reduce((best, p, i) => (p.monetary > raw[best].monetary ? i : best), 0);
+  return raw.map((p, i) => {
+    if (i === vip) return 'VIP';
+    if (p.recency <= RECENT_DAYS) return p.frequency >= 5 ? 'Leales' : 'Nuevos / recientes';
+    return p.frequency >= 3 ? 'En riesgo' : 'Perdidos';
+  });
 }
+
+
 
 async function main() {
   if (process.env.TRAINING_ENABLED !== 'true') {
@@ -107,24 +122,54 @@ async function main() {
   console.log(`\nK elegido: ${bestK}${forcedK ? ' (forzado)' : ''}`);
 
   // 4) perfil y nombre de cada cluster
+  // const members = Array.from({ length: bestK }, () => [] as number[]);
+  // fit.labels.forEach((c, i) => members[c].push(i));
+  //
+  // const used = new Map<string, number>();
+  // const profiles = members.map((idxs, c) => {
+  //   const base = nameCluster(fit.centroids[c]);
+  //   const n = (used.get(base) ?? 0) + 1;
+  //   used.set(base, n);
+  //   const name = n === 1 ? base : `${base} ${String.fromCharCode(64 + n)}`; // 'Leales B'
+  //   return {
+  //     c,
+  //     name,
+  //     size: idxs.length,
+  //     recency: mean(idxs.map((i) => rows[i].recency)),
+  //     frequency: mean(idxs.map((i) => rows[i].frequency)),
+  //     monetary: mean(idxs.map((i) => rows[i].monetary)),
+  //     z: fit.centroids[c],
+  //   };
+  // });
+  //
+  // console.table(
+  //   profiles.map((p) => ({
+  //     segmento: p.name,
+  //     clientes: p.size,
+  //     'recencia (d)': Math.round(p.recency),
+  //     frecuencia: p.frequency.toFixed(1),
+  //     'monto £': Math.round(p.monetary),
+  //   })),
+  // );
+
+    // 4) perfil y nombre de cada cluster
   const members = Array.from({ length: bestK }, () => [] as number[]);
   fit.labels.forEach((c, i) => members[c].push(i));
 
+  const raw = members.map((idxs) => ({
+    size: idxs.length,
+    recency: mean(idxs.map((i) => rows[i].recency)),
+    frequency: mean(idxs.map((i) => rows[i].frequency)),
+    monetary: mean(idxs.map((i) => rows[i].monetary)),
+  }));
+
+  const names = nameClusters(raw);
   const used = new Map<string, number>();
-  const profiles = members.map((idxs, c) => {
-    const base = nameCluster(fit.centroids[c]);
+  const profiles = raw.map((p, c) => {
+    const base = names[c];
     const n = (used.get(base) ?? 0) + 1;
     used.set(base, n);
-    const name = n === 1 ? base : `${base} ${String.fromCharCode(64 + n)}`; // 'Leales B'
-    return {
-      c,
-      name,
-      size: idxs.length,
-      recency: mean(idxs.map((i) => rows[i].recency)),
-      frequency: mean(idxs.map((i) => rows[i].frequency)),
-      monetary: mean(idxs.map((i) => rows[i].monetary)),
-      z: fit.centroids[c],
-    };
+    return { c, ...p, z: fit.centroids[c], name: n === 1 ? base : `${base} ${n}` };
   });
 
   console.table(
