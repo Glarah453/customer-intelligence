@@ -3,8 +3,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const links = [
-  { href: '/', label: 'Segmentos' },
-  { href: '/cohorts', label: 'Cohortes' },
+  { href: '/', label: 'Segmentos', match: ['/', '/kmeans'] },
+  { href: '/cohorts', label: 'Cohortes', match: ['/cohorts'] },
+  { href: '/train', label: 'Entrenar', match: ['/train'] },
 ];
 
 export default function Nav() {
@@ -17,7 +18,7 @@ export default function Nav() {
             key={l.href}
             href={l.href}
             className={`whitespace-nowrap border-b-2 px-3 py-3 text-sm ${
-              pathname === l.href
+              l.match.includes(pathname)
                 ? 'border-blue-600 font-medium text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-900'
             }`}
