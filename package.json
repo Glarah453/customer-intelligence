@@ -10,7 +10,8 @@
     "seed": "tsx scripts/seed.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "train:rfm": "tsx scripts/train-rfm.ts"
+    "train:rfm": "tsx scripts/train-rfm.ts",
+    "train:kmeans": "tsx scripts/train-kmeans.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.1",
