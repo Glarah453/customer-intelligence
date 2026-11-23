@@ -11,7 +11,8 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "train:rfm": "tsx scripts/train-rfm.ts",
-    "train:kmeans": "tsx scripts/train-kmeans.ts"
+    "train:kmeans": "tsx scripts/train-kmeans.ts",
+    "train:clv": "tsx scripts/train-clv.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.1",
