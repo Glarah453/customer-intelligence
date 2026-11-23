@@ -5,8 +5,8 @@ import { usePathname } from 'next/navigation';
 const links = [
   { href: '/', label: 'Segmentos', match: ['/', '/kmeans'] },
   { href: '/cohorts', label: 'Cohortes', match: ['/cohorts'] },
-  { href: '/train', label: 'Entrenar', match: ['/train'] },
   { href: '/clv', label: 'CLV', match: ['/clv'] },
+  { href: '/train', label: 'Entrenar', match: ['/train'] },
 ];
 
 export default function Nav() {
