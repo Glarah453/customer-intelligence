@@ -53,6 +53,7 @@ export const customerMetrics = pgTable(
     segmentId: integer('segment_id').references(() => segments.id),
     clv12m: numeric('clv_12m', { precision: 12, scale: 2 }),
     churnProb: real('churn_prob'),
+    pAlive: real('p_alive'),
   },
   (t) => [index('cm_run_idx').on(t.modelRunId), index('cm_customer_idx').on(t.customerId)],
 );
