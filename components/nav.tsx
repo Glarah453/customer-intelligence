@@ -6,6 +6,7 @@ const links = [
   { href: '/', label: 'Segmentos', match: ['/', '/kmeans'] },
   { href: '/cohorts', label: 'Cohortes', match: ['/cohorts'] },
   { href: '/train', label: 'Entrenar', match: ['/train'] },
+  { href: '/clv', label: 'CLV', match: ['/clv'] },
 ];
 
 export default function Nav() {
