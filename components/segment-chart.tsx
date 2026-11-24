@@ -8,6 +8,7 @@ export default function SegmentChart({ data }: Props) {
     <div className="h-72 w-full">
       <ResponsiveContainer>
         <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
+          {/* <XAxis type="number" tickFormatter={(v) => `£${Math.round(v / 1000)}k`} /> */}
           <XAxis type="number" tickFormatter={(v) => `£${Math.round(v / 1000)}k`} />
           <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 12 }} />
           <Tooltip formatter={(v: number) => `£${v.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`} />
