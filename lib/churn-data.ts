@@ -57,6 +57,7 @@ export async function getChurn() {
       JOIN customers c ON c.id = ch.customer_id
       JOIN customer_metrics cl ON cl.customer_id = ch.customer_id AND cl.model_run_id = ${clvRun.id}
       WHERE ch.model_run_id = ${run.id}
+      AND ch.churn_prob >= 0.4
       ORDER BY at_risk DESC
       LIMIT 25
     `),
