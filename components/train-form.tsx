@@ -8,10 +8,10 @@ export default function TrainForm({ enabled }: { enabled: boolean }) {
 
   if (!enabled) {
     return (
-      <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-        El entrenamiento está deshabilitado en este entorno: se ejecuta solo en local
-        (<code>TRAINING_ENABLED=true</code>). Aquí se muestran los resultados del último modelo entrenado.
-      </div>
+      {/* <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900"> */}
+      {/*   El entrenamiento está deshabilitado en este entorno: se ejecuta solo en local */}
+      {/*   (<code>TRAINING_ENABLED=true</code>). Aquí se muestran los resultados del último modelo entrenado. */}
+      {/* </div> */}
     );
   }
 
