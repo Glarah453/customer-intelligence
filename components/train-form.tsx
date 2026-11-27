@@ -10,7 +10,8 @@ export default function TrainForm({ enabled }: { enabled: boolean }) {
     return (
       <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
         El entrenamiento está deshabilitado en la versión publicada: se ejecuta solo en local
-        (<code>TRAINING_ENABLED=true</code>), porque las funciones serverless no son adecuadas para entrenar
+        {/* (<code>TRAINING_ENABLED=true</code>), porque las funciones serverless no son adecuadas para entrenar */}
+         porque las funciones serverless no son adecuadas para entrenar
         modelos. Abajo se muestran los resultados del último entrenamiento. El README explica cómo ejecutarlo.
       </div>
     );
