@@ -14,7 +14,7 @@ export default function SegmentChart({ data }: Props) {
             } 
           />
           <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 12 }} />
-          <Tooltip formatter={(v: number) => `£${v.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`} />
+          {/* <Tooltip formatter={(v: number) => `£${v.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`} /> */}
           <Bar dataKey="revenue" fill="#3b82f6" radius={[0, 4, 4, 0]} />
         </BarChart>
       </ResponsiveContainer>
