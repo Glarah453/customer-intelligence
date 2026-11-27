@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 
 const links = [
   { href: '/', label: 'Segmentos', match: ['/', '/kmeans'] },
+  { href: '/datos', label: 'Datos', match: ['/datos'] },
   { href: '/cohorts', label: 'Cohortes', match: ['/cohorts'] },
   { href: '/clv', label: 'CLV', match: ['/clv'] },
   { href: '/churn', label: 'Churn', match: ['/churn'] },
